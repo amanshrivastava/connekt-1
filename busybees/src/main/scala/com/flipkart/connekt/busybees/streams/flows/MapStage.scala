@@ -39,7 +39,7 @@ private[busybees] abstract class MapAsyncFlowStage[In, Out](parallelism: Int) {
 
   val map: In => Future[List[Out]]
 
-  def flow = Flow[In].mapAsyncUnordered(parallelism)(map).mapConcat(identity).named(stageName)
+  def flow = Flow[In].mapAsync(parallelism)(map).mapConcat(identity).named(stageName)
 }
 
 private[busybees] abstract class MapGraphStage[In, Out] extends GraphStage[FlowShape[In, Out]] {
