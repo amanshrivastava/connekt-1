@@ -12,20 +12,23 @@
  */
 package com.flipkart.connekt.firefly
 
+import java.lang.Boolean
+
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Source
-import com.fasterxml.jackson.databind.node.ObjectNode
 import com.flipkart.connekt.busybees.streams.sources.KafkaSource
 import com.flipkart.connekt.commons.entities._
 import com.flipkart.connekt.commons.factories.{ConnektLogger, LogFile, ServiceFactory}
+import com.flipkart.connekt.commons.helpers.RMQProducer
 import com.flipkart.connekt.commons.iomodels.CallbackEvent
 import com.flipkart.connekt.commons.utils.StringUtils._
 import com.flipkart.connekt.firefly.sinks.http.HttpSink
 import com.flipkart.connekt.firefly.sinks.kafka.KafkaSink
+import com.flipkart.connekt.firefly.sinks.rmq.RMQSink
 import com.flipkart.connekt.firefly.sinks.specter.SpecterSink
 import com.roundeights.hasher.Implicits._
-import com.typesafe.config.Config
+import com.typesafe.config._
 
 import scala.collection.JavaConverters._
 import scala.concurrent.Promise
@@ -51,8 +54,8 @@ class ClientTopology(topic: String, retryLimit: Int, kafkaConsumerConnConf: Conf
     subscription.sink match {
       case _: HTTPEventSink => source.runWith(new HttpSink(subscription, retryLimit, topologyShutdownTrigger).getHttpSink)
       case kafka: KafkaEventSink => source.runWith(new KafkaSink(kafka.topic, kafka.broker).getKafkaSink)
-      case _: SpecterEventSink =>
-        source.runWith(new SpecterSink().sink)
+      case _: SpecterEventSink => source.runWith(new SpecterSink().sink)
+      case rmq: RMQEventSink => source.runWith(new RMQSink(rmq.queue, new RMQProducer(rmq.host, rmq.username, rmq.password, List(rmq.queue))).sink)
     }
 
     ConnektLogger(LogFile.SERVICE).info(s"Started client topology ${subscription.name}, id: ${subscription.id}")

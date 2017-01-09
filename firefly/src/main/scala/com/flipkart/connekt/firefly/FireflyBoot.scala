@@ -81,6 +81,7 @@ object FireflyBoot extends BaseApp {
   }
 
   def main(args: Array[String]) {
+    System.setProperty("log4j.configurationFile", "log4j2-test.xml")
     start()
   }
 }

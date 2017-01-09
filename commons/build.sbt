@@ -106,7 +106,8 @@ libraryDependencies ++= Seq(
     ExclusionRule("org.apache.curator"),
     ExclusionRule(organization = "org.mockito", name = "mockito-all"),
     ExclusionRule(organization = "org.hamcrest", name = "hamcrest-core")
-    )
+    ),
+    "com.rabbitmq" % "amqp-client" % "4.0.1" withSources()
 )
 
 
