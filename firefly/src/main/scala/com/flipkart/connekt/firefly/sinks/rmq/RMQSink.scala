@@ -1,3 +1,15 @@
+/*
+ *         -╥⌐⌐⌐⌐            -⌐⌐⌐⌐-
+ *      ≡╢░░░░⌐\░░░φ     ╓╝░░░░⌐░░░░╪╕
+ *     ╣╬░░`    `░░░╢┘ φ▒╣╬╝╜     ░░╢╣Q
+ *    ║╣╬░⌐        ` ╤▒▒▒Å`        ║╢╬╣
+ *    ╚╣╬░⌐        ╔▒▒▒▒`«╕        ╢╢╣▒
+ *     ╫╬░░╖    .░ ╙╨╨  ╣╣╬░φ    ╓φ░╢╢Å
+ *      ╙╢░░░░⌐"░░░╜     ╙Å░░░░⌐░░░░╝`
+ *        ``˚¬ ⌐              ˚˚⌐´
+ *
+ *      Copyright © 2016 Flipkart.com
+ */
 package com.flipkart.connekt.firefly.sinks.rmq
 
 import akka.stream.scaladsl.Sink
@@ -11,9 +23,7 @@ import com.flipkart.connekt.commons.utils.StringUtils._
 class RMQSink(queue: String, rmqProducer: RMQProducer) extends Instrumented {
 
   def sink = Sink.foreach[SubscriptionEvent](e => {
-    ConnektLogger(LogFile.SERVICE).info(s"Received callback event ${e.getJson}")
+    ConnektLogger(LogFile.SERVICE).trace(s"Received callback event ${e.getJson}")
     rmqProducer.writeMessage(queue, e.payload)
   })
-
-
 }

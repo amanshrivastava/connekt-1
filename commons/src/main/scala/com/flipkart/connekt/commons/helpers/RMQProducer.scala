@@ -1,8 +1,21 @@
+/*
+ *         -╥⌐⌐⌐⌐            -⌐⌐⌐⌐-
+ *      ≡╢░░░░⌐\░░░φ     ╓╝░░░░⌐░░░░╪╕
+ *     ╣╬░░`    `░░░╢┘ φ▒╣╬╝╜     ░░╢╣Q
+ *    ║╣╬░⌐        ` ╤▒▒▒Å`        ║╢╬╣
+ *    ╚╣╬░⌐        ╔▒▒▒▒`«╕        ╢╢╣▒
+ *     ╫╬░░╖    .░ ╙╨╨  ╣╣╬░φ    ╓φ░╢╢Å
+ *      ╙╢░░░░⌐"░░░╜     ╙Å░░░░⌐░░░░╝`
+ *        ``˚¬ ⌐              ˚˚⌐´
+ *
+ *      Copyright © 2016 Flipkart.com
+ */
 package com.flipkart.connekt.commons.helpers
 
 import com.rabbitmq.client.{Address, Channel, Connection, ConnectionFactory}
 import com.flipkart.connekt.commons.utils.StringUtils._
-import com.typesafe.config.Config
+import com.typesafe.config.{Config, ConfigFactory}
+
 import scala.collection.JavaConverters._
 
 
@@ -24,14 +37,12 @@ class RMQProducer {
   }
 
   def this(host: String, username: String, password: String, queues: List[String]) {
-    this()
-    val addresses = host.split(",").map(new Address(_))
-    this.factory = new ConnectionFactory()
-    this.factory.setUsername(username)
-    this.factory.setPassword(password)
-    this.connection = factory.newConnection(addresses)
-    this.channel = connection.createChannel()
-    queues.foreach(this.channel.queueDeclare(_, true, false, false, null))
+    this(ConfigFactory.parseMap(Map(
+      "rmq.username" -> username,
+      "rmq.password" -> password,
+      "rmq.host" -> host,
+      "rmq.queues" -> queues.asJava
+    ).asJava))
   }
 
 
