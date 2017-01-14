@@ -31,6 +31,8 @@ import scala.util.{Failure, Success, Try}
 
 class OpenWebResponseHandler(implicit m: Materializer, ec: ExecutionContext) extends PNProviderResponseHandler[(Try[HttpResponse], OpenWebRequestTracker)](96) with Instrumented {
 
+  val invalidDeviceMatchers = List("NotRegistered", "UnauthorizedRegistration")
+
   override val map: ((Try[HttpResponse], OpenWebRequestTracker)) => Future[List[PNCallbackEvent]] = responseTrackerPair => Future({
 
     val httpResponse = responseTrackerPair._1
@@ -64,7 +66,7 @@ class OpenWebResponseHandler(implicit m: Materializer, ec: ExecutionContext) ext
                * curl -vvv -X POST -H "Accept: application/json" -H "Content-length: 0" -H "TTL: 21600" "https://updates.push.services.mozilla.com/push/v1/gAAAAABXOvMWgkCNeTlt45ka7aax6zP929q_pIdBLQG7FMhPfTOdxSGNcEALzcai1NszuF1hZoRYBbxWSMC0lFNs6Z2b2PNQVsssp_YZriAUcZJUZHluwrBPTtYwu41fXwzpbxSfPR8KKUv"
                *
                */
-              if (stringResponse.contains("UnauthorizedRegistration")) {
+              if (invalidDeviceMatchers.exists(stringResponse.contains(_))) {
                 ServiceFactory.getReportingService.recordPushStatsDelta(requestTracker.clientId, Option(requestTracker.contextId), requestTracker.meta.get("stencilId").map(_.toString), Option(MobilePlatform.OPENWEB.toString), requestTracker.appName, OpenWebResponseStatus.InvalidToken)
                 events += PNCallbackEvent(messageId, requestTracker.clientId, deviceId, OpenWebResponseStatus.InvalidToken, MobilePlatform.OPENWEB, appName, requestTracker.contextId, stringResponse, eventTS)
                 DeviceDetailsService.get(appName, deviceId).get.foreach(device => if (device.osName == MobilePlatform.OPENWEB.toString) {
